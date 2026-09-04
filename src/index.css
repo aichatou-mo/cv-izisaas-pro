@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Noise Overlay via inline SVG feTurbulence at 0.04 opacity */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+}
+
+/* Selection styling Or */
+::selection {
+  background-color: #D4A843;
+  color: #0B0B10;
+}
+
+/* Magnetic & hover bezier transitions */
+.magnetic-btn {
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.magnetic-btn:hover {
+  transform: scale(1.03);
+}
+
+.interactive-link {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.2s ease;
+}
+.interactive-link:hover {
+  transform: translateY(-1px);
+}
+
+.experience-card {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.experience-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 16px 36px -12px rgba(212, 168, 67, 0.22);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0B10;
+}
+::-webkit-scrollbar-thumb {
+  background: #2E2E3E;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D4A843;
+}
+
+/* Glow utilities Or */
+.gold-glow {
+  box-shadow: 0 0 28px rgba(212, 168, 67, 0.25);
+}
+.gold-glow-lg {
+  box-shadow: 0 0 50px rgba(212, 168, 67, 0.32);
+}
+.gold-gradient-text {
+  background: linear-gradient(135deg, #FFFFFF 20%, #F5E5BE 60%, #D4A843 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
