@@ -970,9 +970,9 @@ export default function App() {
                   
                   <div className="mb-5 pb-4 border-b border-slate-100">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">15 000</span>
+                      <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">500</span>
                       <span className="font-mono text-xs font-bold text-brand-goldDark">FCFA</span>
-                      <span className="text-slate-400 text-xs font-mono">/ pack (~23 €)</span>
+                      <span className="text-slate-400 text-xs font-mono">/ pack (~0,76 €)</span>
                     </div>
                   </div>
 
@@ -997,11 +997,11 @@ export default function App() {
                 </div>
 
                 <button
-                  onClick={() => openPayTech('Pack Révisions ENA & SYSCOHADA', 15000, 23)}
+                  onClick={() => openPayTech('Pack Révisions ENA & SYSCOHADA', 500, 1)}
                   className="magnetic-btn w-full py-3 rounded-full bg-slate-100 hover:bg-brand-gold hover:text-slate-950 text-slate-900 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 transition-all"
                 >
                   <CreditCard className="w-3.5 h-3.5" />
-                  <span>Commander (15 000 FCFA)</span>
+                  <span>Commander (500 FCFA)</span>
                 </button>
               </div>
 
