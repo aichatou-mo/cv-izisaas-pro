@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node -e \"const fs = require('fs'); fs.mkdirSync('dist', { recursive: true }); fs.copyFileSync('index.html', 'dist/index.html'); console.log('dist/index.html ready for Vercel');\"",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
