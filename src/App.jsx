@@ -52,10 +52,10 @@ export default function App() {
   const [buyerName, setBuyerName] = useState('');
   const [buyerPhone, setBuyerPhone] = useState('');
   const [buyerEmail, setBuyerEmail] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [cardExp, setCardExp] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
+  const [isProcessingPay, setIsProcessingPay] = useState(false);
+  const [payError, setPayError] = useState('');
+  const [paySuccessData, setPaySuccessData] = useState(null);
+  const [configPending, setConfigPending] = useState(false);
 
   // Member Modal State
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
@@ -230,63 +230,130 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // PayTech Open / Close
+  // CinetPay Open / Close
   const openPayTech = (planName, fcfa, eur) => {
     setCurrentPlan({ name: planName, fcfa, eur });
     setIsPayModalOpen(true);
+    setPayError('');
+    setConfigPending(false);
   };
 
   const closePayTech = () => {
     setIsPayModalOpen(false);
+    setIsProcessingPay(false);
+    setPayError('');
+    setConfigPending(false);
   };
 
-  const submitPayTech = () => {
+  // Traitement direct et sécurisé CinetPay (via Vercel Serverless /api/cinetpay-init)
+  const submitCinetPay = async () => {
     if (!buyerName || !buyerPhone || !buyerEmail) {
-      alert('Veuillez renseigner votre nom, téléphone et adresse email pour recevoir vos accès.');
+      alert('Veuillez renseigner votre nom, numéro de téléphone et adresse email pour recevoir votre confirmation et vos accès.');
       return;
     }
 
-    const refCode = 'PAYTECH-' + Math.floor(100000 + Math.random() * 900000);
+    setIsProcessingPay(true);
+    setPayError('');
+    setConfigPending(false);
 
-    if (payMethod === 'mobile') {
-      alert(
-        `Paiement initié avec succès sur Airtel Money (+227 77 06 38 37) !\n\n` +
-        `Référence : ${refCode}\n` +
-        `Montant : ${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA\n` +
-        `Programme : ${currentPlan.name}\n` +
-        `Bénéficiaire : Aïchatou Moussa Ousmane (+227 77 06 38 37)\n\n` +
-        `WhatsApp va s'ouvrir pour confirmer votre accès en direct.`
-      );
-      sendWhatsAppPay(refCode);
-    } else if (payMethod === 'card') {
-      if (cardNumber.replace(/\s+/g, '').length < 15) {
-        alert('Veuillez saisir un numéro de carte bancaire valide.');
+    try {
+      const res = await fetch('/api/cinetpay-init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planName: currentPlan.name,
+          amountFCFA: currentPlan.fcfa,
+          buyerName,
+          buyerPhone,
+          buyerEmail,
+          returnUrl: window.location.href
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.requiresConfig) {
+        setIsProcessingPay(false);
+        setConfigPending(true);
         return;
       }
-      alert(`Paiement sécurisé par Carte Bancaire validé !\nRéférence : ${refCode}\nMontant : ${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA.`);
-      sendWhatsAppPay(refCode);
-    } else if (payMethod === 'paypal') {
-      alert(`Redirection vers PayPal pour ${currentPlan.eur} €...\nRéférence : ${refCode}`);
-      window.open('https://paypal.me', '_blank');
-    } else {
-      alert(`Ordre de virement bancaire généré avec la référence : ${refCode}.\nMerci de transmettre le bordereau au +227 77 06 38 37.`);
-      sendWhatsAppPay(refCode);
-    }
 
-    closePayTech();
+      if (data.success && data.paymentUrl) {
+        // Redirection vers le guichet de paiement officiel CinetPay
+        window.location.href = data.paymentUrl;
+      } else {
+        setIsProcessingPay(false);
+        setPayError(data.message || 'Erreur lors de l\'initialisation du paiement sécurisé CinetPay.');
+      }
+    } catch (err) {
+      console.error('Erreur CinetPay:', err);
+      setIsProcessingPay(false);
+      setPayError('Impossible de joindre la passerelle de paiement en direct. Vérifiez votre connexion.');
+    }
   };
 
-  const sendWhatsAppPay = (optRef) => {
-    const ref = optRef || ('AMO-' + Math.floor(100000 + Math.random() * 900000));
-    const text = 
-      `Bonjour Aïchatou, je viens d'effectuer un règlement pour le programme : ${currentPlan.name} (${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA / ~${currentPlan.eur} €).` +
-      `%0A%0A👤 Nom : ${encodeURIComponent(buyerName || 'Client')}` +
-      `%0A📱 Téléphone : ${encodeURIComponent(buyerPhone || 'Non spécifié')}` +
-      `%0A💳 Moyen : ${payMethod.toUpperCase()} (Vers Airtel Money +227 77 06 38 37)` +
-      `%0A🔖 Référence : ${ref}` +
-      `%0A%0AMerci de bien vouloir confirmer mes accès !`;
+  const handleSupportContact = () => {
+    const text = `Bonjour Aïchatou, j'ai une question concernant le programme : ${currentPlan.name}.`;
+    window.open(`https://wa.me/22777063837?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
-    window.open(`https://wa.me/22777063837?text=${text}`, '_blank');
+  const handleDownloadPack = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Téléchargement prêt ! Veuillez autoriser les fenêtres pop-up.');
+      return;
+    }
+    const packHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Pack Révisions ENA & SYSCOHADA - Aïchatou Moussa Ousmane</title>
+  <style>
+    @page { size: A4; margin: 15mm; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a24; line-height: 1.6; max-width: 800px; margin: auto; padding: 20px; }
+    h1 { color: #A67D24; font-size: 22px; border-bottom: 2px solid #D4A843; padding-bottom: 6px; }
+    h2 { color: #111; font-size: 16px; margin-top: 24px; }
+    .badge { display: inline-block; background: #FAF5E8; border: 1px solid #D4A843; color: #8A6414; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 11px; }
+    .box { background: #fdfbf7; border: 1px solid #e8dec8; border-radius: 8px; padding: 15px; margin: 12px 0; }
+    .btn-print { background: #D4A843; color: #111; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; margin-bottom: 20px; }
+    @media print { .btn-print { display: none; } }
+  </style>
+</head>
+<body>
+  <button class="btn-print" onclick="window.print()">🖨️ Télécharger / Enregistrer en PDF</button>
+  <div class="badge">Accès Étudiant Officiel &bull; Reçu Certifié</div>
+  <h1>Pack Révisions ENA Niveau II & SYSCOHADA Révisé</h1>
+  <p><strong>Auteur & Mentor :</strong> Aïchatou Moussa Ousmane — ENA Niveau II (Comptabilité & Gestion)</p>
+  
+  <div class="box">
+    <h2>1. Synthèse Clé SYSCOHADA Révisé</h2>
+    <p>&bull; <strong>Cadre conceptuel :</strong> Postulats comptables, conventions de prudence et de transparence.</p>
+    <p>&bull; <strong>Structure des États Financiers :</strong> Bilan, Compte de Résultat, Tableau des Flux de Trésorerie (TFT) et Notes Annexes.</p>
+    <p>&bull; <strong>Écritures d'Inventaire :</strong> Amortissements, dépréciations d'actifs, régularisations de charges et produits constatés d'avance.</p>
+  </div>
+
+  <div class="box">
+    <h2>2. Méthodologie d'Examen ENA</h2>
+    <p>&bull; Analyse rigoureuse des énoncés de comptabilité des sociétés et fiscalité d'entreprise.</p>
+    <p>&bull; Justification systématique des comptes débités et crédités selon le plan SYSCOHADA.</p>
+    <p>&bull; Contrôle de cohérence : Égalité Actif = Passif et Résultat Bilan = Résultat Compte de Résultat.</p>
+  </div>
+
+  <div class="box">
+    <h2>3. Modèles & Outils Pratiques</h2>
+    <p>&bull; Fiches mémos de calcul des amortissements linéaires et dégressifs.</p>
+    <p>&bull; Modèle de tableau de passage du résultat comptable au résultat fiscal imposable.</p>
+    <p>&bull; Analyse financière : Ratios de liquidité générale, solvabilité et rentabilité des capitaux propres.</p>
+  </div>
+</body>
+</html>
+    `;
+    printWindow.document.write(packHtml);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+    }, 400);
   };
 
   // Member Modal Open / Login / Register
@@ -394,8 +461,8 @@ export default function App() {
           <span class="badge">Comptabilité Informatique & ERP</span>
           <span class="badge">Gestion de Trésorerie & Budgets</span>
         </div>
-        <h2>Informations Paiement Certifié</h2>
-        <p class="desc" style="font-size: 11.5px; color: #666;">Bénéficiaire des règlements formations & consultations : <strong>Airtel Money Niger +227 77 06 38 37</strong> (Aïchatou Moussa Ousmane).</p>
+        <h2>Règlements & Formations</h2>
+        <p class="desc" style="font-size: 11.5px; color: #666;">Paiements en ligne automatisés et sécurisés via la passerelle officielle CinetPay (Airtel Money Niger, Wave, Cartes bancaires Visa/Mastercard).</p>
       </body>
       </html>
     `;
@@ -938,18 +1005,18 @@ export default function App() {
 
           </div>
 
-          {/* TARIFS & FORMATIONS AVEC PAIEMENT PAYTECH */}
+          {/* TARIFS & FORMATIONS AVEC PAIEMENT SECURISE CINETPAY */}
           <div id="tarifs" className="pt-6 sm:pt-10 border-t border-brand-gold/20">
             <div className="text-center mb-8 sm:mb-12">
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 border border-brand-gold/40 text-[10px] sm:text-xs font-mono text-brand-goldDark mb-2 font-bold">
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>PAIEMENT SÉCURISÉ PAYTECH &bull; AIRTEL MONEY +227 77 06 38 37</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>PAIEMENT SÉCURISÉ CINETPAY &bull; AIRTEL MONEY NIGER &bull; WAVE &bull; CARTE BANCAIRE</span>
               </div>
               <h3 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Tarifs Formations & Mentorat
               </h3>
               <p className="font-serif italic text-amber-800 text-sm sm:text-base mt-1 max-w-xl mx-auto">
-                Accédez à mes programmes d'excellence en Bourse, Comptabilité ENA & Technologies Digitales. Règlement instantané par Mobile Money, CB, Wave ou PayPal.
+                Accédez à mes programmes d'excellence en Bourse, Comptabilité ENA & Technologies Digitales. Règlement direct et automatisé par Mobile Money (Airtel Niger, Wave) ou Carte Bancaire.
               </p>
             </div>
 
@@ -1109,20 +1176,20 @@ export default function App() {
 
             </div>
 
-            {/* Mentions de sécurité PayTech & Airtel Money */}
+            {/* Mentions de sécurité CinetPay */}
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-[11px] font-mono text-slate-500">
               <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Paiements vérifiés SSL 256 bits</span>
+                <span>Paiements sécurisés chiffrés SSL 256 bits</span>
               </span>
               <span>&bull;</span>
               <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
-                <Phone className="w-4 h-4 text-brand-goldDark" />
-                <span>Compte officiel Airtel Money : +227 77 06 38 37</span>
+                <CheckCircle className="w-4 h-4 text-brand-goldDark" />
+                <span>Passerelle officielle CinetPay (Airtel Money Niger, Wave, CB)</span>
               </span>
               <span>&bull;</span>
               <span className="text-slate-700 font-semibold">
-                Moyens acceptés : Airtel Money, Wave, CB Visa/Mastercard, PayPal, Virement
+                Délivrance immédiate des accès après confirmation bancaire
               </span>
             </div>
           </div>
@@ -1256,7 +1323,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* MODAL 1 : GUICHET DE PAIEMENT PAYTECH MULTI-MOYENS */}
+      {/* MODAL 1 : GUICHET DE PAIEMENT SECURISE CINETPAY */}
       {isPayModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div className="bg-white rounded-3xl border border-brand-gold/40 shadow-2xl max-w-xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-7 relative">
@@ -1268,278 +1335,166 @@ export default function App() {
               <X className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-brand-goldDark">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <span className="font-mono text-xs font-bold text-brand-goldDark tracking-wider uppercase">PayTech Passerelle Multi-Paiements</span>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Finaliser votre règlement</h3>
-            
-            <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-brand-gold/30 mb-5">
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-semibold text-slate-900 text-sm sm:text-base">{currentPlan.name}</span>
-                <div className="text-right">
-                  <span className="font-bold text-base sm:text-lg text-slate-950">{currentPlan.fcfa.toLocaleString('fr-FR')} FCFA</span>
-                  <span className="text-xs text-slate-500 font-mono block">(~{currentPlan.eur} €)</span>
+            {paySuccessData ? (
+              <div className="text-center py-6 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md">
+                  <CheckCircle className="w-9 h-9" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900">Paiement Validé avec Succès !</h3>
+                <p className="text-sm text-slate-600 max-w-md mx-auto">
+                  Votre règlement pour <strong>{paySuccessData.planName || currentPlan.name}</strong> a été confirmé.
+                </p>
+                <div className="inline-block p-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs text-slate-700">
+                  Réf CinetPay : <strong>{paySuccessData.tx}</strong>
+                </div>
+                <div className="pt-3">
+                  <button
+                    onClick={handleDownloadPack}
+                    className="magnetic-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 font-bold text-sm flex items-center justify-center gap-2 mx-auto shadow-lg shadow-brand-gold/30 hover:brightness-105"
+                  >
+                    <Download className="w-4 h-4 text-slate-950" />
+                    <span>Télécharger mon Pack de Révisions (PDF)</span>
+                  </button>
                 </div>
               </div>
-              <div className="pt-2 border-t border-brand-gold/20 flex items-center justify-between text-xs text-slate-700">
-                <span>Compte récepteur certifié :</span>
-                <span className="font-mono font-bold text-slate-900">Airtel Money +227 77 06 38 37</span>
-              </div>
-            </div>
-
-            <div className="mb-5">
-              <label className="block font-mono text-xs font-bold text-slate-700 uppercase mb-2">Choisissez votre moyen de paiement :</label>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPayMethod('mobile')}
-                  className={`py-2.5 px-3 rounded-xl text-xs flex flex-col items-center gap-1 transition-all ${
-                    payMethod === 'mobile'
-                      ? 'border-2 border-brand-gold bg-amber-50 text-slate-900 font-bold'
-                      : 'border border-slate-200 text-slate-700 font-medium'
-                  }`}
-                >
-                  <Smartphone className="w-4 h-4 text-brand-goldDark" />
-                  <span>Mobile Money</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPayMethod('card')}
-                  className={`py-2.5 px-3 rounded-xl text-xs flex flex-col items-center gap-1 transition-all ${
-                    payMethod === 'card'
-                      ? 'border-2 border-brand-gold bg-amber-50 text-slate-900 font-bold'
-                      : 'border border-slate-200 text-slate-700 font-medium'
-                  }`}
-                >
-                  <CreditCard className="w-4 h-4" />
-                  <span>Carte Bancaire</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPayMethod('paypal')}
-                  className={`py-2.5 px-3 rounded-xl text-xs flex flex-col items-center gap-1 transition-all ${
-                    payMethod === 'paypal'
-                      ? 'border-2 border-brand-gold bg-amber-50 text-slate-900 font-bold'
-                      : 'border border-slate-200 text-slate-700 font-medium'
-                  }`}
-                >
-                  <Globe className="w-4 h-4" />
-                  <span>PayPal</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPayMethod('bank')}
-                  className={`py-2.5 px-3 rounded-xl text-xs flex flex-col items-center gap-1 transition-all ${
-                    payMethod === 'bank'
-                      ? 'border-2 border-brand-gold bg-amber-50 text-slate-900 font-bold'
-                      : 'border border-slate-200 text-slate-700 font-medium'
-                  }`}
-                >
-                  <Building className="w-4 h-4" />
-                  <span>Virement</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Panels */}
-            {payMethod === 'mobile' && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-2 mb-2 font-bold text-xs text-slate-900">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-600"></span>
-                    <span>AIRTEL MONEY NIGER (Règlement Direct)</span>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-brand-goldDark">
+                    <ShieldCheck className="w-4 h-4" />
                   </div>
-                  <p className="text-xs text-slate-600 mb-2 leading-relaxed">
-                    Effectuez un transfert direct Airtel Money vers le numéro ci-dessous :
-                  </p>
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200">
+                  <span className="font-mono text-xs font-bold text-brand-goldDark tracking-wider uppercase">Guichet Sécurisé CinetPay</span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Règlement direct & automatisé</h3>
+                <p className="text-xs text-slate-500 mb-4">Le paiement est traité directement et les fonds sont transférés sur votre compte marchand CinetPay en toute sécurité.</p>
+                
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-brand-gold/30 mb-5">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-semibold text-slate-900 text-sm sm:text-base">{currentPlan.name}</span>
+                    <div className="text-right">
+                      <span className="font-bold text-base sm:text-lg text-slate-950">{currentPlan.fcfa.toLocaleString('fr-FR')} FCFA</span>
+                      <span className="text-xs text-slate-500 font-mono block">(~{currentPlan.eur} €)</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-brand-gold/20 flex items-center justify-between text-xs text-slate-700">
+                    <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Chiffrement bancaire SSL 256 bits</span>
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-mono">Délivrance immédiate</span>
+                  </div>
+                </div>
+
+                {/* Moyens supportés */}
+                <div className="mb-5">
+                  <label className="block font-mono text-xs font-bold text-slate-700 uppercase mb-2">Moyens de paiement acceptés sur CinetPay :</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col items-center gap-1 text-center">
+                      <div className="w-3 h-3 rounded-full bg-red-600"></div>
+                      <span className="text-[11px] font-bold text-slate-800">Airtel Money</span>
+                      <span className="text-[9px] text-slate-500 font-mono">Niger direct</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col items-center gap-1 text-center">
+                      <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
+                      <span className="text-[11px] font-bold text-slate-800">Wave</span>
+                      <span className="text-[9px] text-slate-500 font-mono">Sénégal & CI</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col items-center gap-1 text-center">
+                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                      <span className="text-[11px] font-bold text-slate-800">Orange / Moov</span>
+                      <span className="text-[9px] text-slate-500 font-mono">UEMOA</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col items-center gap-1 text-center">
+                      <CreditCard className="w-3.5 h-3.5 text-slate-700" />
+                      <span className="text-[11px] font-bold text-slate-800">Carte Bancaire</span>
+                      <span className="text-[9px] text-slate-500 font-mono">Visa / Mastercard</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Formulaire acheteur */}
+                <div className="space-y-3 pt-3 border-t border-slate-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <div className="font-mono text-[10px] text-slate-400 uppercase">Numéro Airtel Money</div>
-                      <div className="font-mono font-bold text-sm sm:text-base text-slate-950">+227 77 06 38 37</div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Votre Nom & Prénom *</label>
+                      <input 
+                        type="text" 
+                        value={buyerName}
+                        onChange={(e) => setBuyerName(e.target.value)}
+                        placeholder="Ex: Ibrahim Ousmane" 
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none"
+                      />
                     </div>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText('+22777063837');
-                        alert('Numéro Airtel Money +227 77 06 38 37 copié !');
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono font-semibold"
-                    >
-                      Copier
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-2 italic">Bénéficiaire : Aïchatou Moussa Ousmane</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-                      <span>Wave (Sénégal / CI)</span>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Votre Téléphone Mobile *</label>
+                      <input 
+                        type="tel" 
+                        value={buyerPhone}
+                        onChange={(e) => setBuyerPhone(e.target.value)}
+                        placeholder="Ex: 90 00 00 00" 
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none"
+                      />
                     </div>
-                    <p className="text-[11px] text-slate-600">Lien direct Wave disponible pour validation instantanée.</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                      <span>Orange / Moov Money</span>
-                    </div>
-                    <p className="text-[11px] text-slate-600">Transfert inter-pays UEMOA supporté vers Airtel Niger.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {payMethod === 'card' && (
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nom sur la carte</label>
-                  <input 
-                    type="text" 
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    placeholder="Ex: Jean Dupont" 
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro de carte (Visa / Mastercard)</label>
-                  <input 
-                    type="text" 
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    placeholder="4000 1234 5678 9010" 
-                    maxLength={19} 
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Expiration</label>
-                    <input 
-                      type="text" 
-                      value={cardExp}
-                      onChange={(e) => setCardExp(e.target.value)}
-                      placeholder="MM/AA" 
-                      maxLength={5} 
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none"
-                    />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">CVC / CVV</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Votre Adresse Email * (pour recevoir le reçu & les accès)</label>
                     <input 
-                      type="password" 
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value)}
-                      placeholder="123" 
-                      maxLength={4} 
-                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none"
+                      type="email" 
+                      value={buyerEmail}
+                      onChange={(e) => setBuyerEmail(e.target.value)}
+                      placeholder="votre.email@gmail.com" 
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none"
                     />
                   </div>
                 </div>
-              </div>
+
+                {/* Notifications et erreurs */}
+                {configPending && (
+                  <div className="mt-4 p-3 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-900 space-y-1">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+                      <span>Passerelle CinetPay connectée côté backend !</span>
+                    </div>
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      Pour activer la réception directe des fonds sur votre compte marchand, ajoutez vos identifiants <code>CINETPAY_API_KEY</code> et <code>CINETPAY_SITE_ID</code> dans les variables d'environnement Vercel.
+                    </p>
+                  </div>
+                )}
+
+                {payError && (
+                  <div className="mt-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-800">
+                    {payError}
+                  </div>
+                )}
+
+                {/* Boutons d'action */}
+                <div className="mt-6 space-y-2.5">
+                  <button
+                    onClick={submitCinetPay}
+                    disabled={isProcessingPay}
+                    className="magnetic-btn w-full py-3.5 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/30 hover:brightness-105 disabled:opacity-60 transition-all"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-slate-950" />
+                    <span>
+                      {isProcessingPay
+                        ? 'Connexion sécurisée à CinetPay...'
+                        : `Payer maintenant (${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA) via CinetPay`}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={handleSupportContact}
+                    className="w-full py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-[#25D366]" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                    </svg>
+                    <span>Besoin d'assistance ? Écrire au support</span>
+                  </button>
+                </div>
+              </>
             )}
-
-            {payMethod === 'paypal' && (
-              <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-200 text-center">
-                <Globe className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <h4 className="font-bold text-sm text-slate-900 mb-1">Paiement International PayPal</h4>
-                <p className="text-xs text-slate-600 mb-4">
-                  Réglez en toute sécurité avec votre compte PayPal ou votre carte bancaire internationale.
-                </p>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600 text-white font-bold text-xs font-mono">
-                  PayPal Express Checkout
-                </div>
-              </div>
-            )}
-
-            {payMethod === 'bank' && (
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Banque :</span>
-                  <span className="font-bold text-slate-900">Banque Régionale UEMOA / Niger</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Titulaire :</span>
-                  <span className="font-bold text-slate-900">Aïchatou Moussa Ousmane</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Objet :</span>
-                  <span className="font-bold text-brand-goldDark font-mono">FORMATION-AMO</span>
-                </div>
-                <p className="text-[11px] text-slate-500 pt-2 border-t border-slate-200 italic">
-                  Les accès sont activés dès réception du justificatif de virement par WhatsApp ou Email.
-                </p>
-              </div>
-            )}
-
-            {/* Buyer fields */}
-            <div className="mt-5 space-y-3 pt-4 border-t border-slate-100">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Votre Nom & Prénom *</label>
-                  <input 
-                    type="text" 
-                    value={buyerName}
-                    onChange={(e) => setBuyerName(e.target.value)}
-                    placeholder="Votre nom complet" 
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Numéro WhatsApp / Téléphone *</label>
-                  <input 
-                    type="tel" 
-                    value={buyerPhone}
-                    onChange={(e) => setBuyerPhone(e.target.value)}
-                    placeholder="Ex: +227 90 00 00 00" 
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Adresse Email *</label>
-                <input 
-                  type="email" 
-                  value={buyerEmail}
-                  onChange={(e) => setBuyerEmail(e.target.value)}
-                  placeholder="votre.email@example.com" 
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-2.5">
-              <button
-                onClick={submitPayTech}
-                className="magnetic-btn w-full py-3.5 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/30 hover:brightness-105"
-              >
-                <ShieldCheck className="w-4 h-4 text-slate-950" />
-                <span>
-                  {payMethod === 'mobile' && `Valider sur Airtel Money (+227 77 06 38 37) — ${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA`}
-                  {payMethod === 'card' && `Payer par Carte Bancaire — ${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA`}
-                  {payMethod === 'paypal' && `Payer via PayPal — ${currentPlan.eur} €`}
-                  {payMethod === 'bank' && `Générer l'ordre de virement bancaire — ${currentPlan.fcfa.toLocaleString('fr-FR')} FCFA`}
-                </span>
-              </button>
-
-              <button
-                onClick={() => sendWhatsAppPay()}
-                className="w-full py-2.5 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/40 text-slate-900 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
-              >
-                <svg className="w-4 h-4 fill-[#25D366]" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                </svg>
-                <span>Notifier & Valider directement sur WhatsApp (+227 77 06 38 37)</span>
-              </button>
-            </div>
 
           </div>
         </div>
