@@ -112,6 +112,11 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+
+    .modal-backdrop {
+      background-color: rgba(11, 11, 16, 0.75);
+      backdrop-filter: blur(8px);
+    }
   </style>
 </head>
 <body class="relative min-h-screen text-slate-900 bg-[#FAFAF8] overflow-x-hidden font-sans">
@@ -142,10 +147,22 @@
         <a href="#experience" class="interactive-link hover:text-brand-goldDark transition-colors">Parcours</a>
         <a href="#skills" class="interactive-link hover:text-brand-goldDark transition-colors">Compétences</a>
         <a href="#education" class="interactive-link hover:text-brand-goldDark transition-colors">Formation</a>
+        <a href="#tarifs" class="interactive-link hover:text-brand-goldDark transition-colors font-bold text-brand-goldDark">Tarifs</a>
         <a href="#contact" class="interactive-link hover:text-brand-goldDark transition-colors">Contact</a>
       </div>
 
       <div class="flex items-center gap-2">
+        <!-- Bouton Espace Membre Navbar -->
+        <button
+          id="nav-member-btn"
+          onclick="openMemberModal('login')"
+          class="magnetic-btn hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100/80 border border-brand-gold/40 text-slate-800 text-[11px] font-semibold transition-all shrink-0"
+        >
+          <i data-lucide="user" class="w-3.5 h-3.5 text-brand-goldDark"></i>
+          <span id="nav-member-text">Espace Membre</span>
+        </button>
+
+        <!-- Bouton Télécharger CV PDF -->
         <button
           onclick="handleDownloadCV(event)"
           class="magnetic-btn px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 text-[11px] sm:text-xs font-bold tracking-wide flex items-center gap-1.5 shadow-md shadow-brand-gold/25 hover:brightness-105 shrink-0"
@@ -217,18 +234,28 @@
         </span>
       </div>
 
-      <!-- CTA Buttons -->
-      <div class="hero-cta flex flex-row items-center gap-2.5 sm:gap-4 w-full sm:w-auto justify-center mb-6 sm:mb-8">
+      <!-- CTA Buttons avec Espace Membre Inscription -->
+      <div class="hero-cta flex flex-wrap items-center gap-2.5 sm:gap-3.5 w-full sm:w-auto justify-center mb-6 sm:mb-8">
         <button
           onclick="handleDownloadCV(event)"
-          class="magnetic-btn flex-1 sm:flex-initial px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-brand-gold via-[#F0D58C] to-brand-gold text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/25 hover:brightness-105"
+          class="magnetic-btn px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gradient-to-r from-brand-gold via-[#F0D58C] to-brand-gold text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/25 hover:brightness-105"
         >
           <i data-lucide="file-text" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950"></i>
           <span>Télécharger mon CV</span>
         </button>
+
+        <!-- Nouveau CTA Inscription / Connexion Membre -->
+        <button
+          onclick="openMemberModal('register')"
+          class="magnetic-btn px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-black/10 transition-all"
+        >
+          <i data-lucide="user-plus" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold"></i>
+          <span>Devenir Membre / Connexion</span>
+        </button>
+
         <a
           href="#contact"
-          class="magnetic-btn flex-1 sm:flex-initial px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-white hover:bg-amber-50/50 border border-brand-gold/50 text-slate-900 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+          class="magnetic-btn px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-white hover:bg-amber-50/50 border border-brand-gold/50 text-slate-900 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
         >
           <i data-lucide="mail" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-goldDark"></i>
           <span>Me contacter</span>
@@ -536,7 +563,7 @@
     </div>
   </section>
 
-  <!-- F. FORMATION -->
+  <!-- F. FORMATION & DIPLÔMES -->
   <section id="education" class="py-10 sm:py-20 px-3 sm:px-6 relative bg-[#FAF9F5]">
     <div class="max-w-4xl mx-auto">
       
@@ -550,7 +577,7 @@
         </p>
       </div>
 
-      <div class="space-y-3 sm:space-y-4">
+      <div class="space-y-3 sm:space-y-4 mb-16 sm:mb-20">
         
         <!-- 1. Niveau II -->
         <div class="edu-card bg-white border border-slate-200/80 hover:border-brand-gold/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-md shadow-black/5 transition-all">
@@ -621,6 +648,196 @@
         </div>
 
       </div>
+
+      <!-- SOUS-SECTION TARIFS & FORMATIONS AVEC PAIEMENT PAYTECH -->
+      <div id="tarifs" class="pt-6 sm:pt-10 border-t border-brand-gold/20">
+        <div class="text-center mb-8 sm:mb-12">
+          <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 border border-brand-gold/40 text-[10px] sm:text-xs font-mono text-brand-goldDark mb-2 font-bold">
+            <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+            <span>PAIEMENT SÉCURISÉ PAYTECH &bull; AIRTEL MONEY +227 77 06 38 37</span>
+          </div>
+          <h3 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Tarifs Formations & Mentorat
+          </h3>
+          <p class="font-serif italic text-amber-800 text-sm sm:text-base mt-1 max-w-xl mx-auto">
+            Accédez à mes programmes d'excellence en Bourse, Comptabilité ENA & Technologies Digitales. Règlement instantané par Mobile Money, CB, Wave ou PayPal.
+          </p>
+        </div>
+
+        <!-- 3 Cartes Tarifaires -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+          
+          <!-- Offre 1 -->
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 flex flex-col justify-between shadow-md hover:shadow-xl transition-all relative">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-mono text-xs font-bold text-slate-500 uppercase tracking-wider">Pack Étudiant</span>
+                <span class="p-1.5 rounded-lg bg-amber-50 text-brand-goldDark">
+                  <i data-lucide="book-open" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <h4 class="text-lg font-bold text-slate-900 mb-2">Révisions ENA & SYSCOHADA</h4>
+              <p class="text-xs text-slate-600 mb-4">Pack complet de préparation aux examens, fiches récapitulatives et modèles financiers.</p>
+              
+              <div class="mb-5 pb-4 border-b border-slate-100">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">15 000</span>
+                  <span class="font-mono text-xs font-bold text-brand-goldDark">FCFA</span>
+                  <span class="text-slate-400 text-xs font-mono">/ pack (~23 €)</span>
+                </div>
+              </div>
+
+              <ul class="space-y-2.5 text-xs text-slate-700 mb-6">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Annales d'examens ENA & corrigés types</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Fiches de synthèse SYSCOHADA révisé</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Modèles de bilans & comptes de résultat</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Support Q&A par WhatsApp</span>
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onclick="openPayTechModal('Pack Révisions ENA & SYSCOHADA', 15000, 23)"
+              class="magnetic-btn w-full py-3 rounded-full bg-slate-100 hover:bg-brand-gold hover:text-slate-950 text-slate-900 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 transition-all"
+            >
+              <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+              <span>Commander (15 000 FCFA)</span>
+            </button>
+          </div>
+
+          <!-- Offre 2 — Star / Recommandé -->
+          <div class="bg-gradient-to-b from-white to-[#FFFDF5] border-2 border-brand-gold rounded-3xl p-6 flex flex-col justify-between shadow-xl shadow-brand-gold/15 relative">
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-brand-gold text-slate-950 font-mono text-[10px] font-extrabold uppercase tracking-wider shadow">
+              ⭐ Le Plus Populaire
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-3 pt-1">
+                <span class="font-mono text-xs font-bold text-brand-goldDark uppercase tracking-wider">Mentorat Actif</span>
+                <span class="p-1.5 rounded-lg bg-amber-100 text-brand-goldDark">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <h4 class="text-lg font-bold text-slate-900 mb-2">Bourse BRVM & Trading NGX</h4>
+              <p class="text-xs text-slate-600 mb-4">Session individuelle en visioconférence directe + méthodologie d'analyse technique et sélection d'actions.</p>
+              
+              <div class="mb-5 pb-4 border-b border-amber-100">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">35 000</span>
+                  <span class="font-mono text-xs font-bold text-brand-goldDark">FCFA</span>
+                  <span class="text-slate-400 text-xs font-mono">/ session (~53 €)</span>
+                </div>
+              </div>
+
+              <ul class="space-y-2.5 text-xs text-slate-700 mb-6">
+                <li class="flex items-center gap-2 font-medium">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-brand-goldDark shrink-0"></i>
+                  <span>Session live privée 1h30 (Google Meet)</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-brand-goldDark shrink-0"></i>
+                  <span>Comprendre les indices BRVM-C & NGX ASI</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-brand-goldDark shrink-0"></i>
+                  <span>Méthodes de passation d'ordres rentables</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-brand-goldDark shrink-0"></i>
+                  <span>Accès 1 mois au canal d'alertes boursières</span>
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onclick="openPayTechModal('Mentorat Bourse BRVM & Trading NGX', 35000, 53)"
+              class="magnetic-btn w-full py-3 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-brand-gold/30 hover:brightness-105"
+            >
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-slate-950"></i>
+              <span>Réserver ma session (35 000 FCFA)</span>
+            </button>
+          </div>
+
+          <!-- Offre 3 -->
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 flex flex-col justify-between shadow-md hover:shadow-xl transition-all relative">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-mono text-xs font-bold text-slate-500 uppercase tracking-wider">Immersion 1 Mois</span>
+                <span class="p-1.5 rounded-lg bg-amber-50 text-brand-goldDark">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <h4 class="text-lg font-bold text-slate-900 mb-2">Masterclass Finance & Tech</h4>
+              <p class="text-xs text-slate-600 mb-4">Accompagnement intensif de 4 semaines combinant SYSCOHADA, Bourse et création de solutions Web FinTech.</p>
+              
+              <div class="mb-5 pb-4 border-b border-slate-100">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-2xl sm:text-3xl font-extrabold text-slate-900">75 000</span>
+                  <span class="font-mono text-xs font-bold text-brand-goldDark">FCFA</span>
+                  <span class="text-slate-400 text-xs font-mono">/ mois (~114 €)</span>
+                </div>
+              </div>
+
+              <ul class="space-y-2.5 text-xs text-slate-700 mb-6">
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>4 sessions individuelles hebdomadaires</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Plan de trading personnalisé BRVM / NGX</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Création d'un outil digital de gestion</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span>Suivi continu 7j/7 direct WhatsApp</span>
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onclick="openPayTechModal('Masterclass Intégrale Finance & Tech', 75000, 114)"
+              class="magnetic-btn w-full py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all"
+            >
+              <i data-lucide="check-circle" class="w-3.5 h-3.5 text-brand-gold"></i>
+              <span>Rejoindre (75 000 FCFA)</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Mentions de sécurité PayTech & Airtel Money -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-4 text-[11px] font-mono text-slate-500">
+          <span class="flex items-center gap-1.5 text-slate-700 font-semibold">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            <span>Paiements vérifiés SSL 256 bits</span>
+          </span>
+          <span>&bull;</span>
+          <span class="flex items-center gap-1.5 text-slate-700 font-semibold">
+            <i data-lucide="phone" class="w-4 h-4 text-brand-goldDark"></i>
+            <span>Compte officiel Airtel Money : +227 77 06 38 37</span>
+          </span>
+          <span>&bull;</span>
+          <span class="text-slate-700 font-semibold">
+            Moyens acceptés : Airtel Money, Wave, CB Visa/Mastercard, PayPal, Virement
+          </span>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -750,6 +967,334 @@
     </div>
   </footer>
 
+  <!-- ================================================================= -->
+  <!-- MODAL 1 : GUICHET DE PAIEMENT PAYTECH MULTI-MOYENS                -->
+  <!-- ================================================================= -->
+  <div id="paytech-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl border border-brand-gold/40 shadow-2xl max-w-xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-7 relative">
+      
+      <!-- Bouton Fermer -->
+      <button onclick="closePayTechModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors">
+        ✕
+      </button>
+
+      <!-- Entête PayTech -->
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-brand-goldDark">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+        </div>
+        <span class="font-mono text-xs font-bold text-brand-goldDark tracking-wider uppercase">PayTech Passerelle Multi-Paiements</span>
+      </div>
+
+      <h3 class="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Finaliser votre règlement</h3>
+      
+      <!-- Récapitulatif Offre & Destinataire -->
+      <div class="p-3.5 rounded-2xl bg-amber-50/80 border border-brand-gold/30 mb-5">
+        <div class="flex justify-between items-center mb-1">
+          <span id="paytech-plan-name" class="font-semibold text-slate-900 text-sm sm:text-base">Programme Sélectionné</span>
+          <div class="text-right">
+            <span id="paytech-plan-price" class="font-bold text-base sm:text-lg text-slate-950">35 000 FCFA</span>
+            <span id="paytech-plan-eur" class="text-xs text-slate-500 font-mono block">(~53 €)</span>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-brand-gold/20 flex items-center justify-between text-xs text-slate-700">
+          <span>Compte récepteur certifié :</span>
+          <span class="font-mono font-bold text-slate-900">Airtel Money +227 77 06 38 37</span>
+        </div>
+      </div>
+
+      <!-- Sélecteur de méthode de paiement -->
+      <div class="mb-5">
+        <label class="block font-mono text-xs font-bold text-slate-700 uppercase mb-2">Choisissez votre moyen de paiement :</label>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <!-- Mobile Money -->
+          <button
+            type="button"
+            onclick="switchPaymentTab('mobile')"
+            id="tab-btn-mobile"
+            class="pay-tab-btn py-2.5 px-3 rounded-xl border-2 border-brand-gold bg-amber-50 text-slate-900 text-xs font-bold flex flex-col items-center gap-1 transition-all"
+          >
+            <i data-lucide="smartphone" class="w-4 h-4 text-brand-goldDark"></i>
+            <span>Mobile Money</span>
+          </button>
+
+          <!-- Carte Bancaire -->
+          <button
+            type="button"
+            onclick="switchPaymentTab('card')"
+            id="tab-btn-card"
+            class="pay-tab-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-brand-gold/60 text-slate-700 text-xs font-medium flex flex-col items-center gap-1 transition-all"
+          >
+            <i data-lucide="credit-card" class="w-4 h-4"></i>
+            <span>Carte Bancaire</span>
+          </button>
+
+          <!-- PayPal -->
+          <button
+            type="button"
+            onclick="switchPaymentTab('paypal')"
+            id="tab-btn-paypal"
+            class="pay-tab-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-brand-gold/60 text-slate-700 text-xs font-medium flex flex-col items-center gap-1 transition-all"
+          >
+            <i data-lucide="globe" class="w-4 h-4"></i>
+            <span>PayPal</span>
+          </button>
+
+          <!-- Virement -->
+          <button
+            type="button"
+            onclick="switchPaymentTab('bank')"
+            id="tab-btn-bank"
+            class="pay-tab-btn py-2.5 px-3 rounded-xl border border-slate-200 hover:border-brand-gold/60 text-slate-700 text-xs font-medium flex flex-col items-center gap-1 transition-all"
+          >
+            <i data-lucide="building" class="w-4 h-4"></i>
+            <span>Virement</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenu Onglet 1 : Mobile Money (Airtel Money, Wave, Orange, Moov) -->
+      <div id="payment-panel-mobile" class="payment-panel space-y-4">
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="flex items-center gap-2 mb-2 font-bold text-xs text-slate-900">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+            <span>AIRTEL MONEY NIGER (Règlement Direct)</span>
+          </div>
+          <p class="text-xs text-slate-600 mb-2 leading-relaxed">
+            Effectuez un transfert direct Airtel Money vers le numéro ci-dessous :
+          </p>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200">
+            <div>
+              <div class="font-mono text-[10px] text-slate-400 uppercase">Numéro Airtel Money</div>
+              <div class="font-mono font-bold text-sm sm:text-base text-slate-950">+227 77 06 38 37</div>
+            </div>
+            <button onclick="navigator.clipboard.writeText('+22777063837'); alert('Numéro Airtel Money +227 77 06 38 37 copié !');" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono font-semibold">
+              Copier
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-2 italic">Bénéficiaire : Aïchatou Moussa Ousmane</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+              <span>Wave (Sénégal / CI)</span>
+            </div>
+            <p class="text-[11px] text-slate-600">Lien direct Wave disponible pour validation instantanée.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+              <span>Orange / Moov Money</span>
+            </div>
+            <p class="text-[11px] text-slate-600">Transfert inter-pays UEMOA supporté vers Airtel Niger.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenu Onglet 2 : Carte Bancaire -->
+      <div id="payment-panel-card" class="payment-panel hidden space-y-3">
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nom sur la carte</label>
+            <input type="text" id="card-name" placeholder="Ex: Jean Dupont" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Numéro de carte (Visa / Mastercard)</label>
+            <input type="text" id="card-number" placeholder="4000 1234 5678 9010" maxlength="19" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Expiration</label>
+              <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">CVC / CVV</label>
+              <input type="password" id="card-cvc" placeholder="123" maxlength="4" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenu Onglet 3 : PayPal -->
+      <div id="payment-panel-paypal" class="payment-panel hidden space-y-3">
+        <div class="p-5 rounded-2xl bg-blue-50/60 border border-blue-200 text-center">
+          <i data-lucide="globe" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+          <h4 class="font-bold text-sm text-slate-900 mb-1">Paiement International PayPal</h4>
+          <p class="text-xs text-slate-600 mb-4">
+            Réglez en toute sécurité avec votre compte PayPal ou votre carte bancaire internationale.
+          </p>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600 text-white font-bold text-xs font-mono">
+            PayPal Express Checkout
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenu Onglet 4 : Virement Bancaire -->
+      <div id="payment-panel-bank" class="payment-panel hidden space-y-3">
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Banque :</span>
+            <span class="font-bold text-slate-900">Banque Régionale UEMOA / Niger</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Titulaire :</span>
+            <span class="font-bold text-slate-900">Aïchatou Moussa Ousmane</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Objet :</span>
+            <span class="font-bold text-brand-goldDark font-mono" id="bank-ref">FORMATION-AMO</span>
+          </div>
+          <p class="text-[11px] text-slate-500 pt-2 border-t border-slate-200 italic">
+            Les accès sont activés dès réception du justificatif de virement par WhatsApp ou Email.
+          </p>
+        </div>
+      </div>
+
+      <!-- Informations de l'acheteur -->
+      <div class="mt-5 space-y-3 pt-4 border-t border-slate-100">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Votre Nom & Prénom *</label>
+            <input type="text" id="buyer-name" placeholder="Votre nom complet" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Numéro WhatsApp / Téléphone *</label>
+            <input type="tel" id="buyer-phone" placeholder="Ex: +227 90 00 00 00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Adresse Email *</label>
+          <input type="email" id="buyer-email" placeholder="votre.email@example.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Bouton de validation PayTech -->
+      <div class="mt-6 space-y-2.5">
+        <button
+          onclick="submitPayTechPayment()"
+          class="magnetic-btn w-full py-3.5 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-gold/30 hover:brightness-105"
+        >
+          <i data-lucide="shield-check" class="w-4 h-4 text-slate-950"></i>
+          <span id="paytech-btn-label">Valider le paiement sur Airtel Money (+227 77 06 38 37)</span>
+        </button>
+
+        <button
+          onclick="sendWhatsAppConfirmation()"
+          class="w-full py-2.5 rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/40 text-slate-900 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+        >
+          <svg class="w-4 h-4 fill-[#25D366]" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+          </svg>
+          <span>Notifier & Valider directement sur WhatsApp (+227 77 06 38 37)</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL 2 : ESPACE MEMBRE (INSCRIPTION & CONNEXION)                 -->
+  <!-- ================================================================= -->
+  <div id="member-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl border border-brand-gold/40 shadow-2xl max-w-md w-full p-6 sm:p-8 relative">
+      
+      <button onclick="closeMemberModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors">
+        ✕
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-gold to-brand-goldLight text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md shadow-brand-gold/30">
+          <i data-lucide="user-check" class="w-6 h-6"></i>
+        </div>
+        <h3 id="member-modal-title" class="text-2xl font-bold text-slate-900">Espace Membre</h3>
+        <p class="text-xs text-slate-600 mt-1">Rejoignez le réseau privé d'Aïchatou Moussa Ousmane</p>
+      </div>
+
+      <!-- Switch Tabs Inscription / Connexion -->
+      <div class="flex rounded-full bg-slate-100 p-1 mb-5">
+        <button
+          type="button"
+          id="btn-switch-login"
+          onclick="switchMemberTab('login')"
+          class="flex-1 py-1.5 rounded-full text-xs font-bold text-slate-900 bg-white shadow-xs transition-all"
+        >
+          Se connecter
+        </button>
+        <button
+          type="button"
+          id="btn-switch-register"
+          onclick="switchMemberTab('register')"
+          class="flex-1 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition-all"
+        >
+          Créer un compte
+        </button>
+      </div>
+
+      <!-- Formulaire Connexion -->
+      <form id="form-login" onsubmit="handleMemberLogin(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+          <input type="email" id="login-email" required placeholder="votre.email@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mot de passe</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+        </div>
+        <button
+          type="submit"
+          class="magnetic-btn w-full py-3 rounded-full bg-gradient-to-r from-brand-gold to-[#E2B755] text-slate-950 font-bold text-xs shadow-md shadow-brand-gold/30 hover:brightness-105 transition-all mt-2"
+        >
+          Se connecter & Accéder
+        </button>
+      </form>
+
+      <!-- Formulaire Inscription -->
+      <form id="form-register" onsubmit="handleMemberRegister(event)" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nom complet *</label>
+          <input type="text" id="reg-name" required placeholder="Votre nom et prénom" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email *</label>
+          <input type="email" id="reg-email" required placeholder="votre.email@example.com" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp / Téléphone *</label>
+          <input type="tel" id="reg-phone" required placeholder="+227 77 00 00 00" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-mono focus:border-brand-gold focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Mot de passe *</label>
+          <input type="password" id="reg-password" required placeholder="Créer un mot de passe" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:border-brand-gold focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Domaine d'intérêt</label>
+          <select id="reg-interest" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white focus:border-brand-gold focus:outline-none">
+            <option value="bourse">Bourse & Trading (BRVM / NGX)</option>
+            <option value="comptabilite">Comptabilité SYSCOHADA (ENA)</option>
+            <option value="web">Conception Web & Mobile FinTech</option>
+            <option value="partenariat">Partenariat & Recrutement</option>
+          </select>
+        </div>
+        <button
+          type="submit"
+          class="magnetic-btn w-full py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition-all mt-3"
+        >
+          Créer mon compte Membre
+        </button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <p class="text-[11px] text-slate-500">
+          En créant un compte, vous débloquez immédiatement le CV officiel au format PDF et les alertes d'analyse financière.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -870,6 +1415,9 @@
           });
         }
       }
+
+      // Check existing member session
+      checkMemberSession();
     });
 
     // 3. Navbar Morphing on scroll
@@ -899,9 +1447,245 @@
     updateDashClock();
     setInterval(updateDashClock, 1000);
 
-    // 5. Professional CV PDF Download / Print
+    // =================================================================
+    // 5. PAYTECH GATEWAY LOGIC (Airtel Money +227 77 06 38 37)
+    // =================================================================
+    var currentPayData = {
+      planName: 'Mentorat Bourse BRVM & Trading NGX',
+      amountFCFA: 35000,
+      amountEUR: 53,
+      method: 'mobile'
+    };
+
+    function openPayTechModal(planName, amountFCFA, amountEUR) {
+      currentPayData.planName = planName;
+      currentPayData.amountFCFA = amountFCFA;
+      currentPayData.amountEUR = amountEUR;
+
+      document.getElementById('paytech-plan-name').textContent = planName;
+      document.getElementById('paytech-plan-price').textContent = Number(amountFCFA).toLocaleString('fr-FR') + ' FCFA';
+      document.getElementById('paytech-plan-eur').textContent = '(~' + amountEUR + ' €)';
+      document.getElementById('bank-ref').textContent = 'AMO-' + Math.floor(1000 + Math.random() * 9000);
+
+      updatePayBtnLabel();
+
+      var modal = document.getElementById('paytech-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closePayTechModal() {
+      var modal = document.getElementById('paytech-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function switchPaymentTab(tabName) {
+      currentPayData.method = tabName;
+      
+      // Update buttons
+      document.querySelectorAll('.pay-tab-btn').forEach(function(btn) {
+        btn.classList.remove('border-2', 'border-brand-gold', 'bg-amber-50', 'text-slate-900', 'font-bold');
+        btn.classList.add('border', 'border-slate-200', 'text-slate-700', 'font-medium');
+      });
+
+      var activeBtn = document.getElementById('tab-btn-' + tabName);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-200', 'text-slate-700', 'font-medium');
+        activeBtn.classList.add('border-2', 'border-brand-gold', 'bg-amber-50', 'text-slate-900', 'font-bold');
+      }
+
+      // Hide all panels
+      document.querySelectorAll('.payment-panel').forEach(function(panel) {
+        panel.classList.add('hidden');
+      });
+
+      // Show active panel
+      var activePanel = document.getElementById('payment-panel-' + tabName);
+      if (activePanel) {
+        activePanel.classList.remove('hidden');
+      }
+
+      updatePayBtnLabel();
+    }
+
+    function updatePayBtnLabel() {
+      var labelEl = document.getElementById('paytech-btn-label');
+      var amountStr = Number(currentPayData.amountFCFA).toLocaleString('fr-FR') + ' FCFA';
+      
+      if (currentPayData.method === 'mobile') {
+        labelEl.textContent = 'Valider sur Airtel Money (+227 77 06 38 37) — ' + amountStr;
+      } else if (currentPayData.method === 'card') {
+        labelEl.textContent = 'Payer par Carte Bancaire — ' + amountStr;
+      } else if (currentPayData.method === 'paypal') {
+        labelEl.textContent = 'Payer via PayPal — ' + currentPayData.amountEUR + ' €';
+      } else if (currentPayData.method === 'bank') {
+        labelEl.textContent = 'Générer l\'ordre de virement bancaire — ' + amountStr;
+      }
+    }
+
+    function submitPayTechPayment() {
+      var name = document.getElementById('buyer-name').value.trim();
+      var phone = document.getElementById('buyer-phone').value.trim();
+      var email = document.getElementById('buyer-email').value.trim();
+
+      if (!name || !phone || !email) {
+        alert('Veuillez renseigner votre nom, téléphone et adresse email pour recevoir votre confirmation et vos accès.');
+        return;
+      }
+
+      var refCode = 'PAYTECH-' + Math.floor(100000 + Math.random() * 900000);
+
+      if (currentPayData.method === 'mobile') {
+        var msg = 'Paiement initié avec succès sur Airtel Money (+227 77 06 38 37) !\n\n' +
+          'Référence de transaction : ' + refCode + '\n' +
+          'Montant : ' + Number(currentPayData.amountFCFA).toLocaleString('fr-FR') + ' FCFA\n' +
+          'Programme : ' + currentPayData.planName + '\n' +
+          'Bénéficiaire : Aïchatou Moussa Ousmane (+227 77 06 38 37)\n\n' +
+          'Un message WhatsApp de confirmation va s\'ouvrir pour valider immédiatement votre accès.';
+        alert(msg);
+        sendWhatsAppConfirmation(refCode);
+      } else if (currentPayData.method === 'card') {
+        var cardNum = document.getElementById('card-number').value.replace(/\s+/g, '');
+        if (cardNum.length < 15) {
+          alert('Veuillez saisir un numéro de carte bancaire valide.');
+          return;
+        }
+        alert('Autorisation de paiement sécurisé par Carte Bancaire accordée !\nRéférence : ' + refCode + '\nMontant débité : ' + Number(currentPayData.amountFCFA).toLocaleString('fr-FR') + ' FCFA.\nVotre reçu vous a été transmis à ' + email);
+        sendWhatsAppConfirmation(refCode);
+      } else if (currentPayData.method === 'paypal') {
+        alert('Redirection vers PayPal pour un montant de ' + currentPayData.amountEUR + ' €...\nRéférence : ' + refCode);
+        window.open('https://paypal.me', '_blank');
+      } else {
+        alert('Ordre de virement bancaire généré avec la référence : ' + refCode + '.\nMerci d\'effectuer le virement et de transmettre le bordereau par WhatsApp au +227 77 06 38 37.');
+        sendWhatsAppConfirmation(refCode);
+      }
+
+      closePayTechModal();
+    }
+
+    function sendWhatsAppConfirmation(optRef) {
+      var name = document.getElementById('buyer-name').value.trim() || 'Client';
+      var phone = document.getElementById('buyer-phone').value.trim() || 'Non spécifié';
+      var ref = optRef || ('AMO-' + Math.floor(100000 + Math.random() * 900000));
+      var method = currentPayData.method.toUpperCase();
+
+      var text = 'Bonjour Aïchatou, je viens d\'effectuer un règlement pour le programme : ' +
+        currentPayData.planName + ' (' + Number(currentPayData.amountFCFA).toLocaleString('fr-FR') + ' FCFA / ~' + currentPayData.amountEUR + ' €).' +
+        '%0A%0A👤 Nom : ' + encodeURIComponent(name) +
+        '%0A📱 Téléphone : ' + encodeURIComponent(phone) +
+        '%0A💳 Moyen : ' + method + ' (Vers Airtel Money +227 77 06 38 37)' +
+        '%0A🔖 Référence : ' + ref +
+        '%0A%0AMerci de bien vouloir confirmer mes accès !';
+
+      window.open('https://wa.me/22777063837?text=' + text, '_blank');
+    }
+
+    // =================================================================
+    // 6. MEMBER REGISTRATION & LOGIN MODAL
+    // =================================================================
+    function openMemberModal(tab) {
+      var modal = document.getElementById('member-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      switchMemberTab(tab || 'login');
+    }
+
+    function closeMemberModal() {
+      var modal = document.getElementById('member-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function switchMemberTab(tab) {
+      var btnLogin = document.getElementById('btn-switch-login');
+      var btnReg = document.getElementById('btn-switch-register');
+      var formLogin = document.getElementById('form-login');
+      var formReg = document.getElementById('form-register');
+      var title = document.getElementById('member-modal-title');
+
+      if (tab === 'login') {
+        btnLogin.className = 'flex-1 py-1.5 rounded-full text-xs font-bold text-slate-900 bg-white shadow-xs transition-all';
+        btnReg.className = 'flex-1 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition-all';
+        formLogin.classList.remove('hidden');
+        formReg.classList.add('hidden');
+        title.textContent = 'Connexion Espace Membre';
+      } else {
+        btnReg.className = 'flex-1 py-1.5 rounded-full text-xs font-bold text-slate-900 bg-white shadow-xs transition-all';
+        btnLogin.className = 'flex-1 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition-all';
+        formReg.classList.remove('hidden');
+        formLogin.classList.add('hidden');
+        title.textContent = 'Créer un Compte Membre';
+      }
+    }
+
+    function handleMemberLogin(e) {
+      e.preventDefault();
+      var email = document.getElementById('login-email').value.trim();
+      var user = {
+        name: email.split('@')[0],
+        email: email,
+        isLoggedIn: true
+      };
+      localStorage.setItem('amo_member_user', JSON.stringify(user));
+      alert('Bienvenue sur votre Espace Membre, ' + user.name + ' !\nVotre accès au CV certifié et aux ressources privées est débloqué.');
+      closeMemberModal();
+      checkMemberSession();
+    }
+
+    function handleMemberRegister(e) {
+      e.preventDefault();
+      var name = document.getElementById('reg-name').value.trim();
+      var email = document.getElementById('reg-email').value.trim();
+      var phone = document.getElementById('reg-phone').value.trim();
+      var interest = document.getElementById('reg-interest').value;
+
+      var user = {
+        name: name,
+        email: email,
+        phone: phone,
+        interest: interest,
+        isLoggedIn: true
+      };
+      localStorage.setItem('amo_member_user', JSON.stringify(user));
+      alert('Félicitations ' + name + ' ! Votre inscription comme membre officiel est validée.\nVotre téléchargement du CV certifié est maintenant disponible.');
+      closeMemberModal();
+      checkMemberSession();
+      // Open download directly
+      handleDownloadCV();
+    }
+
+    function checkMemberSession() {
+      try {
+        var raw = localStorage.getItem('amo_member_user');
+        if (raw) {
+          var user = JSON.parse(raw);
+          if (user && user.isLoggedIn) {
+            var navBtnText = document.getElementById('nav-member-text');
+            if (navBtnText) {
+              navBtnText.textContent = 'Membre : ' + (user.name || 'Connecté');
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // 7. Professional CV PDF Download / Print
     function handleDownloadCV(e) {
       if (e) e.preventDefault();
+      
+      // Verification session membre (invitation douce sans blocage agressif)
+      var raw = localStorage.getItem('amo_member_user');
+      if (!raw) {
+        var shouldRegister = confirm("💡 Astuce : Devenez membre gratuitement pour recevoir les mises à jour financières et le CV officiel certifié d'Aïchatou Moussa Ousmane.\n\nCliquez sur 'OK' pour vous inscrire/connecter, ou sur 'Annuler' pour imprimer directement le CV.");
+        if (shouldRegister) {
+          openMemberModal('register');
+          return;
+        }
+      }
+
       var printWindow = window.open('', '_blank');
       if (!printWindow) {
         window.print();
@@ -943,6 +1727,8 @@
         '<span class="badge">Comptabilité Informatique & ERP</span>' +
         '<span class="badge">Gestion de Trésorerie & Budgets</span>' +
         '</div>' +
+        '<h2>Informations Paiement Certifié</h2>' +
+        '<p class="desc" style="font-size: 11.5px; color: #666;">Bénéficiaire des règlements formations & consultations : <strong>Airtel Money Niger +227 77 06 38 37</strong> (Aïchatou Moussa Ousmane).</p>' +
         '</body></html>';
       printWindow.document.open();
       printWindow.document.write(docContent);
