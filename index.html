@@ -117,6 +117,139 @@
       background-color: rgba(11, 11, 16, 0.75);
       backdrop-filter: blur(8px);
     }
+
+    /* ===== SIDEBAR DASHBOARD ===== */
+    #sidebar-dashboard {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 300px;
+      max-width: 85vw;
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      background: linear-gradient(180deg, #0F0F13 0%, #16161F 60%, #1A1A26 100%);
+      border-right: 1px solid rgba(212, 168, 67, 0.18);
+      box-shadow: 4px 0 40px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    #sidebar-dashboard.sidebar-open {
+      transform: translateX(0);
+    }
+    #sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 199;
+      background: rgba(11, 11, 16, 0.65);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    #sidebar-overlay.overlay-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sidebar-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 20px;
+      border-radius: 14px;
+      color: #a1a1aa;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .sidebar-nav-link:hover, .sidebar-nav-link.active-section {
+      background: rgba(212, 168, 67, 0.10);
+      border-color: rgba(212, 168, 67, 0.25);
+      color: #D4A843;
+      transform: translateX(3px);
+    }
+    .sidebar-nav-link .sb-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(212, 168, 67, 0.08);
+      border: 1px solid rgba(212, 168, 67, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.22s ease;
+    }
+    .sidebar-nav-link:hover .sb-icon, .sidebar-nav-link.active-section .sb-icon {
+      background: rgba(212, 168, 67, 0.18);
+      border-color: rgba(212, 168, 67, 0.45);
+    }
+    .sidebar-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,168,67,0.2), transparent);
+      margin: 10px 20px;
+    }
+    .sidebar-section-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(212, 168, 67, 0.55);
+      padding: 0 20px;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    /* Hamburger button */
+    #hamburger-btn {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4.5px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid rgba(212,168,67,0.35);
+      background: rgba(212,168,67,0.07);
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      flex-shrink: 0;
+    }
+    #hamburger-btn:hover {
+      background: rgba(212,168,67,0.15);
+      border-color: rgba(212,168,67,0.6);
+      transform: scale(1.05);
+    }
+    #hamburger-btn .hb-line {
+      display: block;
+      width: 16px;
+      height: 1.5px;
+      background: #D4A843;
+      border-radius: 9999px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform-origin: center;
+    }
+    #hamburger-btn.is-open .hb-line:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+    #hamburger-btn.is-open .hb-line:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    #hamburger-btn.is-open .hb-line:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+    /* Scrollbar inside sidebar */
+    #sidebar-dashboard::-webkit-scrollbar { width: 3px; }
+    #sidebar-dashboard::-webkit-scrollbar-track { background: transparent; }
+    #sidebar-dashboard::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.3); border-radius: 9999px; }
   </style>
 </head>
 <body class="relative min-h-screen text-slate-900 bg-[#FAFAF8] overflow-x-hidden font-sans">
@@ -132,6 +265,13 @@
   <!-- A. NAVBAR — La Signature Flottante -->
   <header class="fixed top-2 sm:top-4 left-0 right-0 z-50 flex justify-center px-3 pointer-events-none">
     <nav id="main-nav" class="pointer-events-auto flex items-center justify-between gap-2 sm:gap-6 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all duration-400 max-w-4xl w-full bg-white/80 backdrop-blur-md border border-slate-200/80 shadow-md shadow-black/5">
+      
+      <!-- Bouton Hamburger Dashboard -->
+      <button id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu Dashboard" title="Ouvrir le tableau de bord">
+        <span class="hb-line"></span>
+        <span class="hb-line"></span>
+        <span class="hb-line"></span>
+      </button>
       
       <a href="#hero" class="flex items-center gap-2 group shrink-0">
         <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-brand-gold via-[#F3DE97] to-brand-goldDark flex items-center justify-center text-[10px] sm:text-xs font-mono font-bold text-slate-950 shadow-md group-hover:scale-105 transition-transform">
@@ -173,6 +313,169 @@
       </div>
     </nav>
   </header>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR DASHBOARD -->
+  <aside id="sidebar-dashboard" role="navigation" aria-label="Dashboard navigation">
+    
+    <!-- Header Sidebar -->
+    <div class="px-5 pt-6 pb-4 border-b border-[rgba(212,168,67,0.12)]">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-gold via-[#F3DE97] to-brand-goldDark flex items-center justify-center text-[10px] font-mono font-bold text-slate-950 shadow-lg">
+            AMO
+          </div>
+          <div>
+            <div class="text-white font-semibold text-sm leading-tight">Aïchatou M.O.</div>
+            <div class="font-mono text-[10px] text-brand-gold/70">Portfolio Digital</div>
+          </div>
+        </div>
+        <button onclick="closeSidebar()" class="w-7 h-7 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all" title="Fermer">
+          <i data-lucide="x" class="w-3.5 h-3.5 text-slate-400"></i>
+        </button>
+      </div>
+      <!-- Status Online -->
+      <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+        <span class="font-mono text-[11px] text-emerald-400 font-semibold">En ligne — Disponible</span>
+      </div>
+    </div>
+
+    <!-- Navigation Sections -->
+    <div class="px-3 pt-3 flex-1">
+      
+      <div class="sidebar-section-label">Navigation</div>
+      
+      <a href="#hero" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="home" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Accueil</div>
+          <div class="text-[11px] text-slate-500">Page principale & hero</div>
+        </div>
+      </a>
+
+      <a href="#about" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="user" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">À propos</div>
+          <div class="text-[11px] text-slate-500">Vision & Manifeste</div>
+        </div>
+      </a>
+
+      <a href="#experience" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="briefcase" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Parcours</div>
+          <div class="text-[11px] text-slate-500">Expériences & formations</div>
+        </div>
+      </a>
+
+      <a href="#skills" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="bar-chart-2" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Compétences</div>
+          <div class="text-[11px] text-slate-500">Tableau de bord analytique</div>
+        </div>
+      </a>
+
+      <a href="#education" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="graduation-cap" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Formation</div>
+          <div class="text-[11px] text-slate-500">ENA & diplômes</div>
+        </div>
+      </a>
+
+      <a href="#tarifs" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="tag" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm text-brand-gold">Tarifs & Services</div>
+          <div class="text-[11px] text-slate-500">Plans & offres</div>
+        </div>
+      </a>
+
+      <a href="#contact" class="sidebar-nav-link" onclick="closeSidebar()">
+        <span class="sb-icon"><i data-lucide="mail" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Contact</div>
+          <div class="text-[11px] text-slate-500">Me joindre</div>
+        </div>
+      </a>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Actions rapides</div>
+
+      <!-- Espace Membre -->
+      <button onclick="openMemberModal('login'); closeSidebar()" class="sidebar-nav-link w-full text-left">
+        <span class="sb-icon"><i data-lucide="shield-check" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Espace Membre</div>
+          <div class="text-[11px] text-slate-500">Connexion / Inscription</div>
+        </div>
+      </button>
+
+      <!-- Télécharger CV -->
+      <button onclick="handleDownloadCV(event); closeSidebar()" class="sidebar-nav-link w-full text-left">
+        <span class="sb-icon"><i data-lucide="file-down" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Télécharger CV</div>
+          <div class="text-[11px] text-slate-500">Format PDF</div>
+        </div>
+      </button>
+
+      <!-- Payer / Accès formation -->
+      <a href="#tarifs" onclick="closeSidebar()" class="sidebar-nav-link">
+        <span class="sb-icon"><i data-lucide="credit-card" class="w-4 h-4 text-brand-gold"></i></span>
+        <div>
+          <div class="font-semibold text-sm">Payer via CinetPay</div>
+          <div class="text-[11px] text-slate-500">Mobile Money & Carte</div>
+        </div>
+      </a>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Marchés & Finance</div>
+
+      <!-- Mini Market Stats -->
+      <div class="px-2 py-3 space-y-2">
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/4 border border-white/6">
+          <div class="flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span class="font-mono text-[11px] text-slate-300 font-semibold">BRVM-C</span>
+          </div>
+          <span class="font-mono text-[11px] text-emerald-400 font-bold">+1.24% ↗</span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/4 border border-white/6">
+          <div class="flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span class="font-mono text-[11px] text-slate-300 font-semibold">NGX ASI</span>
+          </div>
+          <span class="font-mono text-[11px] text-emerald-400 font-bold">+0.87% ↗</span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/4 border border-white/6">
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-brand-gold"></i>
+            <span class="font-mono text-[11px] text-slate-300 font-semibold">SYSCOHADA</span>
+          </div>
+          <span class="font-mono text-[11px] text-brand-gold font-bold">Audité ✓</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Sidebar -->
+    <div class="px-5 py-4 border-t border-[rgba(212,168,67,0.12)] mt-auto">
+      <div class="flex items-center justify-between">
+        <div class="font-mono text-[10px] text-slate-600">© 2025 AMO</div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-mono text-[10px] text-emerald-500">Online</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
 
   <!-- B. SECTION HERO -->
   <section id="hero" class="relative min-h-[92vh] md:min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 pt-16 sm:pt-20 pb-8 sm:pb-12 overflow-hidden bg-gradient-to-b from-white via-[#FAF9F5] to-[#F5F3ED]">
@@ -1933,6 +2236,76 @@
         printWindow.print();
       }, 400);
     }
+
+    // =================================================================
+    // SIDEBAR DASHBOARD — Toggle & Navigation Active
+    // =================================================================
+    var sidebarOpen = false;
+
+    function toggleSidebar() {
+      sidebarOpen ? closeSidebar() : openSidebar();
+    }
+
+    function openSidebar() {
+      sidebarOpen = true;
+      var sidebar = document.getElementById('sidebar-dashboard');
+      var overlay = document.getElementById('sidebar-overlay');
+      var btn = document.getElementById('hamburger-btn');
+      sidebar.classList.add('sidebar-open');
+      overlay.classList.add('overlay-visible');
+      btn.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      // Re-init lucide icons inside sidebar
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function closeSidebar() {
+      sidebarOpen = false;
+      var sidebar = document.getElementById('sidebar-dashboard');
+      var overlay = document.getElementById('sidebar-overlay');
+      var btn = document.getElementById('hamburger-btn');
+      sidebar.classList.remove('sidebar-open');
+      overlay.classList.remove('overlay-visible');
+      btn.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    // Fermer avec la touche Échap
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && sidebarOpen) closeSidebar();
+    });
+
+    // Surligner la section active dans la sidebar
+    (function() {
+      var sectionIds = ['hero', 'about', 'experience', 'skills', 'education', 'tarifs', 'contact'];
+      var sidebarLinks = {};
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // Map links
+        document.querySelectorAll('#sidebar-dashboard a[href^="#"]').forEach(function(link) {
+          var id = link.getAttribute('href').replace('#', '');
+          sidebarLinks[id] = link;
+        });
+
+        // IntersectionObserver
+        var observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            var id = entry.target.id;
+            if (sidebarLinks[id]) {
+              if (entry.isIntersecting) {
+                Object.values(sidebarLinks).forEach(function(l) { l.classList.remove('active-section'); });
+                sidebarLinks[id].classList.add('active-section');
+              }
+            }
+          });
+        }, { threshold: 0.3 });
+
+        sectionIds.forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) observer.observe(el);
+        });
+      });
+    })();
   </script>
 </body>
 </html>
